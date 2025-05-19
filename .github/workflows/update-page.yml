@@ -1,9 +1,9 @@
 name: Update Static Page with Run Time
 
 on:
-  workflow_dispatch:  # Manual run
+  workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'  # Optional: every hour
+    - cron: '0 * * * *'  # Optional: hourly
 
 jobs:
   update-html:
@@ -23,13 +23,14 @@ jobs:
           TIMESTAMP=$(date)
           sed -i "/<ul id=\"log\">/a \ \ \ \ <li>$TIMESTAMP</li>" index.html
 
-      - name: Commit and push changes
+      - name: Set remote URL with PAT
         env:
-          TOKEN: ${{ secrets.PAT_X }}
+          TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git
+
+      - name: Commit and push changes
         run: |
           git add index.html
           git commit -m "Update log with timestamp: $(date)" || echo "No changes to commit"
-          
-          # Use the token explicitly for pushing
-          git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git
           git push origin HEAD:main
