@@ -1,0 +1,30 @@
+name: Update Static Page with Run Time
+
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '0 * * * *'  # Optional: every hour
+
+jobs:
+  update-html:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Append date and time to HTML file
+        run: |
+          TIMESTAMP=$(date)
+          sed -i "/<ul id=\"log\">/a \ \ \ \ <li>$TIMESTAMP</li>" index.html
+
+      - name: Commit and push changes
+        run: |
+          git add index.html
+          git commit -m "Update log with timestamp: $(date)" || echo "No changes to commit"
+          git push
